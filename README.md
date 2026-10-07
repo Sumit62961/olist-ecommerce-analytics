@@ -2,19 +2,50 @@
 
 ## Overview
 
-This project analyzes the **Brazilian Olist e-commerce dataset** to understand customer behavior, delivery performance, product/category revenue, and seller performance.
+This project analyzes the **Brazilian Olist E-Commerce dataset** to understand customer behavior, delivery performance, product/category revenue, and seller performance.
 
-The project combines **MySQL, Python, Pandas, NumPy, and Matplotlib** to perform data analysis and generate business-focused insights.
+The project combines **MySQL, Python, Pandas, NumPy, Flask, and Streamlit** to perform business-focused data analysis and present the results through a REST API and interactive dashboard.
 
-The Python analysis pipeline was later refactored into a simple **object-oriented structure** to make the project more organized, reusable, and easier to maintain.
+The Python analysis pipeline was refactored into a simple **object-oriented structure** to make the analysis more organized, reusable, and easier to maintain.
+
+The project follows this architecture:
+
+```text
+Olist CSV Data
+      │
+      ├──────────────► MySQL
+      │                  │
+      │                  ▼
+      │             SQL Analysis
+      │
+      ▼
+Python / Pandas
+      │
+      ▼
+Object-Oriented Analysis
+      │
+      ├──────────────► Flask REST API
+      │                      │
+      │                      ▼
+      │                 JSON Responses
+      │                      │
+      │                      ▼
+      │                 Streamlit Dashboard
+      │
+      ▼
+Business Insights
+```
 
 The main goal of the project is to answer practical business questions such as:
 
 - Which customers generate high revenue?
-- How many orders are delivered late?
-- Which product categories contribute the most revenue?
-- Which categories account for most of the total revenue?
+- What percentage of orders are delivered late?
+- Which product categories generate the most revenue?
+- How concentrated is revenue across product categories?
 - Which sellers require greater attention based on delivery performance and customer reviews?
+- How can the analysis results be exposed through an API and presented through a dashboard?
+
+---
 
 ## Project Objectives
 
@@ -26,20 +57,43 @@ The main objectives of this project are:
 - Identify categories that contribute significantly to overall revenue.
 - Analyze seller performance using delivery and customer review data.
 - Use SQL to perform business-oriented data analysis.
-- Use Python, Pandas, and NumPy to perform data processing and analysis.
+- Use Python, Pandas, and NumPy for data processing and analysis.
 - Organize the Python analysis into reusable classes and functions using basic object-oriented programming.
+- Build a Flask REST API to expose important analytics results.
+- Build a Streamlit dashboard to present business KPIs and analysis visually.
 - Generate meaningful business insights that can support data-driven decision-making.
+
+---
 
 ## Technologies Used
 
+### Programming & Analysis
+
 - **Python** — Data processing and analysis
 - **Pandas** — Data cleaning, transformation, merging, grouping, and analysis
-- **NumPy** — Numerical operations and customer/category classification
+- **NumPy** — Numerical operations and classification
 - **Matplotlib** — Data visualization
-- **MySQL** — Database management and SQL-based business analysis
 - **Jupyter Notebook** — Exploratory analysis and experimentation
-- **PyCharm** — Python development and project management
-- **Git & GitHub** — Version control and project management
+
+### Database
+
+- **MySQL** — Database management and SQL-based business analysis
+- **mysql-connector-python** — Python connection to MySQL
+
+### Backend & Dashboard
+
+- **Flask** — REST API development
+- **Requests** — API requests from the Streamlit dashboard
+- **Streamlit** — Interactive analytics dashboard
+- **python-dotenv** — Environment variable management
+
+### Development & Version Control
+
+- **PyCharm** — Python development
+- **Git** — Version control
+- **GitHub** — Repository and project management
+
+---
 
 ## Dataset
 
@@ -57,9 +111,14 @@ The raw dataset contains the following CSV files:
 - `olist_sellers_dataset.csv`
 - `product_category_name_translation.csv`
 
-The dataset was loaded into MySQL for SQL-based analysis and is also used locally by the Python analysis pipeline.
+The dataset is used in two ways:
 
-### Dataset Handling
+1. Loaded into **MySQL** for SQL-based business analysis.
+2. Stored locally in `data/raw/` for the Python analysis pipeline.
+
+---
+
+## Dataset Handling
 
 The raw CSV files are kept locally and are **not included in this Git repository** because some files are relatively large.
 
@@ -69,18 +128,39 @@ Place the downloaded CSV files inside:
 data/raw/
 ```
 
-For example, on the development machine used for this project:
+For example:
 
 ```text
-C:\Users\pauls\PycharmProjects\olist-ecommerce-analytics\data\raw\
+olist-ecommerce-analytics/
+└── data/
+    └── raw/
+        ├── olist_customers_dataset.csv
+        ├── olist_orders_dataset.csv
+        ├── ...
+        └── product_category_name_translation.csv
 ```
 
-The absolute Windows path above is only an example for the local development environment. When cloning the project on another computer, use that computer's project directory and keep the CSV files inside `data/raw/`.
+The raw dataset is excluded from Git using `.gitignore`.
+
+The Python pipeline automatically resolves the project root and reads the files from:
+
+```text
+data/raw/
+```
+
+---
 
 ## Project Structure
 
 ```text
 olist-ecommerce-analytics/
+│
+├── api/
+│   ├── app.py
+│   └── database.py
+│
+├── dashboard/
+│   └── app.py
 │
 ├── data/
 │   ├── processed/
@@ -115,99 +195,188 @@ olist-ecommerce-analytics/
 └── requirements.txt
 ```
 
-## Key Business Insights
+---
 
-### Customer Insights
+# Key Business Insights
 
-- 4,489 customers were identified as high-value customers based on spending of at least 500 and the defined customer segmentation criteria.
-- These high-value customers generated approximately **4.17 million** in revenue.
-- The average spending of a high-value customer was approximately **929.95**, compared with approximately **129.19** for other customers.
-- The analysis shows that a relatively small group of high-value customers contributes a significant amount of revenue.
+## Customer Insights
 
-### Delivery Insights
+The customer analysis identifies high-value customers using spending and order-frequency criteria.
 
-- 96,476 orders had a recorded customer delivery date.
-- 7,827 delivered orders were classified as late.
+- **4,489 customers** were identified as high-value customers.
+- These customers generated approximately **4.17 million** in revenue.
+- The average spending of a high-value customer was approximately **929.95**.
+- The average spending of other customers was approximately **129.19**.
+- High-value customers therefore have significantly higher spending than the rest of the customer base.
+
+### Business Recommendation
+
+The business can focus on high-value customers through:
+
+- Personalized offers
+- Loyalty rewards
+- Targeted promotions
+- Exclusive discounts
+- Customer retention strategies
+
+Broad discounts for all customers may not be necessary when a smaller high-value segment contributes a significant amount of revenue.
+
+---
+
+## Delivery Insights
+
+The delivery analysis evaluates delivery completion and compares actual delivery dates with estimated delivery dates.
+
+- **96,476 orders** had a recorded customer delivery date.
+- **7,827 orders** were classified as late.
 - The overall late-delivery rate was **8.11%**.
-- On-time orders took an average of **10.42 days**, while late orders took an average of **31.06 days**.
-- Late deliveries therefore represent an important area for operational improvement.
+- **88,649 orders** were delivered on time.
+- On-time orders took an average of **10.42 days**.
+- Late orders took an average of **31.06 days**.
 
-### Product and Category Insights
+Late deliveries therefore represent an important area for operational improvement.
 
-- `beleza_saude` was the highest-revenue category, generating approximately **1.26 million** in product revenue.
-- The top five categories were `beleza_saude`, `relogios_presentes`, `cama_mesa_banho`, `esporte_lazer`, and `informatica_acessorios`.
-- Six categories individually contributed at least 5% of category revenue.
+### Business Recommendation
+
+The business can investigate:
+
+- Sellers with consistently high late-delivery rates
+- Logistics performance
+- Regional delivery delays
+- Delivery-time differences between sellers and orders
+- Areas where estimated delivery dates are frequently missed
+
+---
+
+## Product and Category Insights
+
+Product categories were analyzed using revenue and order-level information.
+
+The highest-revenue categories included:
+
+1. `beleza_saude`
+2. `relogios_presentes`
+3. `cama_mesa_banho`
+4. `esporte_lazer`
+5. `informatica_acessorios`
+
+The highest-revenue category, `beleza_saude`, generated approximately **1.26 million** in product revenue.
+
+Additional analysis showed:
+
+- **6 categories** individually contributed at least 5% of category revenue.
 - **17 categories** were required to reach approximately 80% of cumulative category revenue.
 
-### Seller Insights
+### Business Recommendation
 
-- Seller performance was analyzed using order delivery performance and customer review scores.
-- Sellers were classified into **Low, Medium, and High Priority** groups.
-- The current Python analysis identified **265 High Priority**, **189 Medium Priority**, and **2,636 Low Priority** sellers in the seller-performance dataset.
-- Combining delivery performance with customer reviews provides a more useful view of seller performance than looking at either metric independently.
+The company can prioritize major revenue-generating categories while continuing to monitor smaller categories for growth opportunities.
 
-## How to Run the Project
+---
 
-### 1. Clone the Repository
+## Seller Insights
 
-After creating the GitHub repository, clone it using:
+Seller performance was analyzed using:
 
-```bash
-git clone <repository-url>
-cd olist-ecommerce-analytics
-```
+- Number of orders
+- Delivery performance
+- Late-delivery rate
+- Customer review scores
 
-Replace `<repository-url>` with the actual GitHub repository URL.
+Sellers were classified into:
 
-### 2. Create and Activate a Virtual Environment
+- Low Priority
+- Medium Priority
+- High Priority
 
-Create a virtual environment:
+The current Python analysis identified:
 
-```bash
-python -m venv .venv
-```
+- **2,636 Low Priority sellers**
+- **189 Medium Priority sellers**
+- **265 High Priority sellers**
 
-Activate it on Windows PowerShell:
+Combining delivery performance with customer reviews provides a more useful view of seller performance than analyzing either metric independently.
 
-```powershell
-.venv\Scripts\Activate.ps1
-```
+### Business Recommendation
 
-### 3. Install Dependencies
+High-priority sellers can be investigated further to understand:
 
-Install the required Python packages:
+- Delivery problems
+- Customer satisfaction issues
+- Operational bottlenecks
+- Seller-specific performance patterns
 
-```bash
-pip install -r requirements.txt
-```
+---
 
-The current Python analysis requires:
+# Python Analysis Pipeline
 
-- pandas
-- numpy
-- matplotlib
+The Python analysis is organized into separate classes based on the analysis area.
 
-### 4. Add the Dataset
+### `DataLoader`
 
-Download the Brazilian Olist E-Commerce Dataset and place all required CSV files inside:
+Responsible for loading the Olist CSV datasets from:
 
 ```text
 data/raw/
 ```
 
-The raw dataset is intentionally excluded from Git because of its file size.
+### `CustomerAnalysis`
 
-### 5. Run the Python Analysis
+Responsible for:
 
-From the project root directory, run:
+- Customer-level metrics
+- Order counts
+- Customer spending
+- Customer segmentation
+- High-value customer analysis
 
-```bash
-python src/main.py
-```
+### `DeliveryAnalysis`
 
-The program loads the datasets, performs the customer, delivery, product, and seller analyses, and prints the generated business summaries in the terminal.
+Responsible for:
 
-## MySQL Analysis
+- Delivery time calculation
+- Late-delivery identification
+- Late-delivery rate
+- On-time delivery rate
+- Delivery performance
+- Delivery gap analysis
+
+### `ProductAnalysis`
+
+Responsible for:
+
+- Category revenue
+- Category order counts
+- Average order value
+- Category classification
+- Revenue contribution
+- Cumulative revenue
+- 80% revenue analysis
+
+### `SellerAnalysis`
+
+Responsible for:
+
+- Seller order analysis
+- Seller delivery performance
+- Seller late-delivery rate
+- Average customer review score
+- Seller priority classification
+
+### `Report`
+
+Responsible for:
+
+- Collecting analysis results
+- Cleaning Python/NumPy values for output
+- Printing final analysis summaries
+
+### `main.py`
+
+Coordinates the complete Python analysis workflow.
+
+---
+
+# MySQL Analysis
 
 The project also uses **MySQL** for database-based analysis.
 
@@ -225,62 +394,453 @@ SQL analysis was used to answer business questions involving:
 - Product categories
 - Delivery performance
 - Seller performance
-- Aggregations and business metrics
+- Aggregations
+- Grouping
+- Business metrics
+- Advanced SQL analysis
 
 The MySQL database is separate from the local CSV-based Python pipeline.
 
-## Python Analysis Pipeline
+---
 
-The Python analysis is organized into separate classes based on the analysis area:
+# Flask REST API
 
-- `DataLoader` — Loads the Olist CSV datasets.
-- `CustomerAnalysis` — Creates customer-level metrics and customer segments.
-- `DeliveryAnalysis` — Calculates delivery time, late-delivery rate, delivery performance, and delivery gaps.
-- `ProductAnalysis` — Analyzes category revenue, category performance, revenue contribution, and cumulative revenue.
-- `SellerAnalysis` — Analyzes seller delivery performance and customer review scores.
-- `Report` — Collects and prints the final analysis results.
-- `main.py` — Coordinates the complete analysis workflow.
+A Flask REST API was developed to expose important analytics results as JSON.
 
-## Git and Data Handling
+The API connects to the MySQL database and provides analytics endpoints.
 
-The project uses Git for version control.
+## Available Endpoints
+
+### API Status
+
+```text
+GET /
+```
+
+Returns the API status.
+
+Example:
+
+```json
+{
+    "message": "Olist API is running",
+    "status": "success"
+}
+```
+
+### Overall Summary
+
+```text
+GET /api/summary
+```
+
+Provides:
+
+- Total orders
+- Delivered orders
+- Total revenue
+
+### Customer Analysis
+
+```text
+GET /api/customers
+```
+
+Provides:
+
+- Total unique customers
+- Repeat customers
+- Repeat customer rate
+
+### Delivery Analysis
+
+```text
+GET /api/delivery
+```
+
+Provides:
+
+- Total delivered orders
+- On-time orders
+- Late orders
+- Late-delivery rate
+
+### Category Analysis
+
+```text
+GET /api/categories
+```
+
+Returns the top five product categories by revenue.
+
+### Seller Analysis
+
+```text
+GET /api/sellers
+```
+
+Returns the top ten sellers by number of orders.
+
+---
+
+# Environment Configuration
+
+The Flask API connects to MySQL using environment variables.
+
+Create a local `.env` file in the project root:
+
+```text
+MYSQL_PASSWORD=your_mysql_password
+```
+
+Do **not** commit the `.env` file to GitHub.
+
+The project `.gitignore` excludes:
+
+```text
+.env
+```
+
+This keeps database credentials outside the source code.
+
+---
+
+# Streamlit Dashboard
+
+An interactive Streamlit dashboard was developed on top of the Flask REST API.
+
+The architecture is:
+
+```text
+MySQL
+   │
+   ▼
+Flask REST API
+   │
+   │ JSON
+   ▼
+Streamlit Dashboard
+```
+
+The dashboard displays:
+
+### Key Performance Indicators
+
+- Total Orders
+- Delivered Orders
+- Total Revenue
+- Repeat Customer Rate
+- Late Delivery Rate
+- On-Time Delivery Rate
+
+### Customer Analysis
+
+- Total Unique Customers
+- Repeat Customers
+- Repeat Customer Rate
+
+### Delivery Analysis
+
+- Total Delivered Orders
+- Late Orders
+- On-Time Orders
+
+### Category Analysis
+
+- Top 5 product categories by revenue
+- Revenue visualization
+
+### Seller Analysis
+
+- Top 10 sellers by number of orders
+- Seller order visualization
+
+---
+
+# How to Run the Project
+
+## 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd olist-ecommerce-analytics
+```
+
+Replace `<repository-url>` with the GitHub repository URL.
+
+---
+
+## 2. Create a Virtual Environment
+
+```bash
+python -m venv .venv
+```
+
+Activate it on Windows PowerShell:
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+---
+
+## 3. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+The main dependencies are:
+
+```text
+pandas
+numpy
+matplotlib
+flask
+mysql-connector-python
+python-dotenv
+streamlit
+requests
+```
+
+---
+
+## 4. Add the Dataset
+
+Download the Brazilian Olist E-Commerce Dataset.
+
+Place the CSV files inside:
+
+```text
+data/raw/
+```
+
+---
+
+## 5. Configure MySQL
+
+Create the required MySQL database:
+
+```text
+sales
+```
+
+Load the Olist dataset tables into the database.
+
+Make sure the MySQL password is configured in the `.env` file:
+
+```text
+MYSQL_PASSWORD=your_mysql_password
+```
+
+---
+
+# Running the Python Analysis
+
+From the project root directory:
+
+```bash
+python src/main.py
+```
+
+The program loads the datasets and performs:
+
+- Customer analysis
+- Delivery analysis
+- Product/category analysis
+- Seller analysis
+
+The final results are printed in the terminal.
+
+---
+
+# Running the Flask API
+
+From the project root directory:
+
+```bash
+python -m api.app
+```
+
+The API will normally be available at:
+
+```text
+http://127.0.0.1:5000
+```
+
+You can test the API status by opening:
+
+```text
+http://127.0.0.1:5000/
+```
+
+---
+
+# Running the Streamlit Dashboard
+
+The Flask API must be running first.
+
+In another terminal, activate the virtual environment and run:
+
+```bash
+streamlit run dashboard/app.py
+```
+
+Streamlit will provide a local URL, usually similar to:
+
+```text
+http://localhost:8501
+```
+
+Open the URL in a browser to view the dashboard.
+
+---
+
+# Running the Complete Application
+
+The recommended workflow is:
+
+### Terminal 1 — Flask API
+
+```bash
+python -m api.app
+```
+
+### Terminal 2 — Streamlit Dashboard
+
+```bash
+streamlit run dashboard/app.py
+```
+
+The Streamlit dashboard requests analytics data from the Flask API, while the Flask API retrieves the required information from MySQL.
+
+---
+
+# Git and Data Handling
+
+The project uses Git and GitHub for version control.
 
 Large raw dataset files are excluded from the repository using `.gitignore`.
 
-The following local files/directories are also excluded:
+The following local files/directories are excluded:
 
-- `.venv/`
-- `.idea/`
-- `data/raw/`
-- Python cache files
-- Jupyter checkpoint files
+```text
+.venv/
+.idea/
+data/raw/
+.env
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+```
 
-This keeps the repository focused on the source code, notebook, documentation, and project configuration.
+This keeps the repository focused on:
 
-## Future Improvements
+- Source code
+- API code
+- Dashboard code
+- Notebook
+- Documentation
+- Project configuration
 
-Planned extensions for the project include:
+The project follows a development workflow where new features are developed on the `development` branch and merged into `main` through pull requests.
 
-- Build a Flask REST API to expose analysis results.
-- Build an interactive Streamlit dashboard.
-- Add an ML-based feature such as delivery-delay prediction or low-review-risk analysis.
-- Add automated tests for the analysis classes.
-- Improve the project with additional business KPIs and visualizations.
+---
 
-## Project Status
+# Project Development Workflow
 
-Current completed components:
+The project was developed incrementally through the following stages:
 
-- Olist dataset analysis
-- MySQL business analysis
+```text
+1. Dataset Exploration
+        ↓
+2. MySQL Database & SQL Analysis
+        ↓
+3. Python / Pandas Analysis
+        ↓
+4. Object-Oriented Refactoring
+        ↓
+5. Flask REST API
+        ↓
+6. Streamlit Dashboard
+        ↓
+7. Final Testing & Documentation
+```
+
+This approach separates data analysis, backend API development, and dashboard presentation.
+
+---
+
+# Future Improvements
+
+Potential future improvements include:
+
+- Add an ML-based feature such as delivery-delay prediction or low-review-risk prediction.
+- Add automated tests for the analysis classes and API endpoints.
+- Add more advanced dashboard filters and interactive visualizations.
+- Add additional business KPIs.
+- Improve API error handling and response validation.
+- Add deployment support for the Flask API and Streamlit dashboard.
+
+---
+
+# Project Status
+
+## Completed
+
+- Olist dataset exploration
+- MySQL database analysis
+- SQL business analysis
 - Python/Pandas analysis
+- NumPy-based classification
 - Customer analysis
 - Delivery analysis
 - Product/category analysis
 - Seller analysis
 - Basic object-oriented project refactoring
+- Reusable Python analysis classes
+- Result reporting system
+- Flask REST API
+- MySQL-to-API integration
+- Streamlit analytics dashboard
+- API-to-dashboard integration
+- Environment variable configuration
+- Dependency management
+- Git version control
+- GitHub repository setup
+- Development branch workflow
+- Pull request workflow
 - Project documentation
-- Python dependency management
-- Git version control setup
 
-Future components such as the Flask API, Streamlit dashboard, and ML feature are planned extensions and are not yet included in the current implementation.
+## Planned
+
+- Machine learning feature
+- Automated testing
+- Additional dashboard improvements
+- Optional deployment
+
+---
+
+# Conclusion
+
+The Olist E-Commerce Analytics project demonstrates an end-to-end analytics workflow using **SQL, Python, Pandas, NumPy, Flask, and Streamlit**.
+
+The project moves from raw e-commerce data to:
+
+```text
+Raw Data
+   ↓
+MySQL / SQL Analysis
+   ↓
+Python Data Analysis
+   ↓
+Object-Oriented Analytics
+   ↓
+Flask REST API
+   ↓
+Streamlit Dashboard
+   ↓
+Business Insights
+```
+
+The resulting system provides a practical foundation for analyzing e-commerce operations, customer behavior, delivery performance, product categories, and seller performance while demonstrating skills relevant to **Data Analyst and Data Science roles**.
