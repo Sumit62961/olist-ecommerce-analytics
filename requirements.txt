@@ -4,3 +4,5 @@ matplotlib
 flask
 mysql-connector-python
 python-dotenv
+streamlit
+requests
